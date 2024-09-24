@@ -3,10 +3,13 @@ const bcrypt = require("bcrypt");
 const app_constants = require("../constants/app.json");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../helpers/sendEmail");
+const sendToken = require("../helpers/sentToken");
+const cloudinary = require("../helpers/cloudinary");
 
 
 exports.userSignUp = async (data) => {
-
+  console.log(data);
+  
   const user_data = await User.findOne({ email: data.email });
   if (user_data) {
     return {
@@ -22,7 +25,7 @@ exports.userSignUp = async (data) => {
   const add_user = await User.create({ ...data, password: hash_password });
   //to send email
 
-  const subject = "Welcome to Our APP!"
+  const subject = "Welcome to Our WebPage!"
   const html =  `<!DOCTYPE html>
   <html lang="en">
   <head>
@@ -41,9 +44,11 @@ exports.userSignUp = async (data) => {
   };
 };
 
-exports.userLogIn = async (data) => {
+exports.userLogIn = async (data,res) => {
   const { email, password } = data;
   const user_data = await User.findOne({ email });
+  // console.log(user_data);
+  
   if (!user_data) {
     return {
       success: 0,
@@ -64,18 +69,61 @@ exports.userLogIn = async (data) => {
     };
   }
 
-  const token = await jwt.sign({ id: user_data.id }, process.env.JST_SECRET_KEY);
-  
-  await User.updateOne(
-    {_id:user_data._id},
-    {$set:{token}}
-  )
+  sendToken(user_data,res);
+};
+
+exports.getUser = async (data) => {
+ 
+  if (!data) {
+    return {
+      success: 0,
+      status: app_constants.BAD_REQUEST,
+      message: "user does not exist",
+      result: {},
+    };
+  }
+
   return {
-    success: 1,
-    status: app_constants.SUCCESS,
-    message: "user logged in successfully",
-    result: { token },
-  };
+    success:1,
+    status: app_constants.success,
+    message:"user found successfully!",
+    result : data
+  }
+
+};
+
+exports.userAvatarUpdate = async (req) => {
+//  console.log("ram ram");
+ 
+  const user_data = req.user;
+  // console.log(req.file);
+  
+
+  if(user_data){
+    const imageId = user_data.avatar.public_id;
+    if(imageId){
+      await cloudinary.uploader.destroy(imageId);
+    }
+    
+    const uploadResponse = await cloudinary.uploader.upload(req.file.path,{
+      folder: "RecipeAvatar",
+    })
+
+    user_data.avatar = {
+      public_id: uploadResponse.public_id,
+      url:uploadResponse.secure_url,
+    }
+  }
+
+  const result = await user_data.save();
+
+  return {
+    success:1,
+    status: app_constants.success,
+    message:"user avater update successfully!",
+    result
+  }
+
 };
 
 exports.updateProfile = async (data,user_data) => {
@@ -122,31 +170,22 @@ exports.updateProfile = async (data,user_data) => {
   };
 };
 
-exports.logoutUser = async (data) => {
-  const { _id } = data;
+exports.logoutUser = async (req,res) => {
+// console.log("ram ram");
 
-  const logout_user = await User.updateOne(
-    {_id},
-    {$set:{token:""}}
-  )
+res.cookie("user_token",null,{
+  expires: new Date(Date.now()),
+  httpOnly: true,
+});
 
-  if(logout_user){
     return {
       success: 1,
       status: app_constants.SUCCESS,
       message: "user logout successfully",
-      result: { logout_user },
+      result: {},
     };
   }
 
-  return {
-    success:0,
-    status:app_constants.INTERNAL_SERVER_ERROR,
-    message: "Internal Server Error",
-    result: {},
-  }
-  
-};
 
 exports.userProfile = async (data) => {
   const { id } = data;

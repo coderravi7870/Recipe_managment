@@ -1,17 +1,56 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { server } from "../../server/server";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const Login = () => {
   const [visible, setVisible] = useState(false);
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    await axios.post(`${server}/user/login`, {
+      email, 
+      password
+    }, {
+      withCredentials: true  // Important for sending cookies
+    })
+    .then((result) => {
+      if (result.data?.success) {
+        // On success, show a success message and navigate
+        toast.success(result?.data?.message);
+        navigate("/");
+        window.location.reload();
+      } else {
+        // On failure, show an error message
+        toast.error(result?.data?.message || "Login failed");
+      }
+    })
+    .catch((err) => {
+      // Log the error details for debugging
+      console.error(err);
+  
+      // Handle potential error cases more explicitly
+      if (err.response && err.response.data) {
+        toast.error(err.response.data.message || "An error occurred");
+      } else {
+        toast.error("Network error or server is unreachable");
+      }
+    });
+  
+  }
   return (
     <div className="w-full min-h-screen sm:bg-gray-500 bg-slate-200 flex justify-center mx-auto items-center select-none">
       <div className="sm:w-[400px] bg-slate-300 p-4 rounded-lg">
         <h4 className="text-xl font-bold text-center">Login Your Account</h4>
         <div className="mt-5 object-cover">
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="block text-[17px] font-mono mb-1">Email</label>
               <input

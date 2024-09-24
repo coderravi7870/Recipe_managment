@@ -1,3 +1,4 @@
+import axios from "axios";
 import { server } from "../../server/server";
 import {
   userGetFailed,
@@ -5,15 +6,27 @@ import {
   userRequest,
 } from "../ReducerSlice/userSlices";
 
-exports.userLoader = () => async (dispatch) => {
+export const userLoader = () => async (dispatch) => {
   try {
+    
     dispatch(userRequest());
+
+    // console.log("Ram ram");
+
     const { data } = await axios.get(`${server}/user/getuser`, {
       withCredentials: true,
     });
 
-    dispatch(userGetSuccess(data.result));
+    // console.log("data",data);
+
+    if(data.success){
+      dispatch(userGetSuccess(data.result));
+    }else{
+      dispatch(userGetFailed(data.message));
+    }
+    
+
   } catch (error) {
-    dispatch(userGetFailed(error.result.data.message));
+    dispatch(userGetFailed(error?.result?.data?.message));
   }
 };

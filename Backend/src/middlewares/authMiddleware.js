@@ -5,9 +5,11 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 exports.verifyToken = async (req, res, next) => {
-  //   console.log(req.headers);
-  const { authorization } = req.headers;
-  if (!authorization) {
+  // console.log("ram ram");
+  
+  const { user_token } = req.cookies;
+    // console.log("token",user_token);
+  if (!user_token) {
     return res.json({
       success: 0,
       status: app_constants.UNAUTHORIZED,
@@ -16,10 +18,7 @@ exports.verifyToken = async (req, res, next) => {
     });
   }
 
-  const token = authorization.replace("Bearer ", "");
-
-
-  const verify_token = await jwt.verify(token, process.env.JST_SECRET_KEY);
+  const verify_token = await jwt.verify(user_token, process.env.JST_SECRET_KEY);
   
 
   if (!verify_token) {
@@ -30,12 +29,8 @@ exports.verifyToken = async (req, res, next) => {
       result: {},
     });
   }
-
- 
-
   const { id } = verify_token;
  
-
   const user_data = await User.findById(id);
   
   if (!user_data) {
@@ -46,16 +41,6 @@ exports.verifyToken = async (req, res, next) => {
       result: {},
     });
   }
-
-  if(token !== user_data.token) {
-    return res.json({
-      success: 0,
-      status: app_constants.UNAUTHORIZED,
-      message: "Invalid token!",
-      result: {},
-    });
-  }
- 
   // console.log("req.user", req.user);
 
   req.user = user_data;

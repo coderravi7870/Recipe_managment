@@ -4,7 +4,7 @@ const app_constants = require("../constants/app.json");
 
 exports.userSignUp = async (req, res) => {
   try {
-    const required_fields = ["username", "email", "password"];
+    const required_fields = ["fullname", "email", "password"];
 
     const validation = validationHelper.validation(required_fields, req.body);
     if (Object.keys(validation).length) {
@@ -33,8 +33,6 @@ exports.userSignUp = async (req, res) => {
         result: {},
       });
     }
-
-    // console.log(req.body);
 
     const add_user = await userServices.userSignUp(req.body);
     return res.json(add_user);
@@ -80,7 +78,7 @@ exports.userLogIn = async (req, res) => {
       });
     }
 
-    const login_user = await userServices.userLogIn(req.body);
+    const login_user = await userServices.userLogIn(req.body,res);
     return res.json(login_user);
   } catch (err) {
     return res.json({
@@ -90,6 +88,35 @@ exports.userLogIn = async (req, res) => {
     });
   }
 };
+
+exports.getUser = async (req, res) => {
+  try {
+    // console.log(req.user);
+    const login_user = await userServices.getUser(req.user);
+    return res.json(login_user);
+  } catch (err) {
+    return res.json({
+      success: 0,
+      status_code: app_constants.INTERNAL_SERVER_ERROR,
+      message: err.message,
+    });
+  }
+};
+
+exports.userAvatarUpdate = async (req, res) => {
+  try {
+    const login_user = await userServices.userAvatarUpdate(req);
+    return res.json(login_user);
+  } catch (err) {
+    return res.json({
+      success: 0,
+      status_code: app_constants.INTERNAL_SERVER_ERROR,
+      message: err.message,
+    });
+  }
+};
+
+
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -108,11 +135,9 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-
 exports.logoutUser = async (req, res) => {
   try {
-    
-    const logoutUser = await userServices.logoutUser(req.user);
+    const logoutUser = await userServices.logoutUser(req,res);
     return res.json(logoutUser);
   } catch (err) {
     return res.json({
