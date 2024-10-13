@@ -6,7 +6,6 @@ const app_constants = require("../constants/app.json");
 const { Types } = require("mongoose");
 
 exports.getRecipe = async (data) => {
- 
   const params = {
     ingredients: data.ingredients,
     number: data.number ? data.number : 5,

@@ -4,6 +4,8 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { server } from "../../server/server";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { userLoader } from "../../Redux/Action/userAction";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
   const [visible, setVisible] = useState(false);
@@ -11,6 +13,7 @@ const Login = () => {
   const [password,setPassword] = useState("");
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,7 +29,7 @@ const Login = () => {
         // On success, show a success message and navigate
         toast.success(result?.data?.message);
         navigate("/");
-        window.location.reload();
+        dispatch(userLoader());
       } else {
         // On failure, show an error message
         toast.error(result?.data?.message || "Login failed");

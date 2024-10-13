@@ -7,9 +7,9 @@ require("dotenv").config();
 exports.verifyToken = async (req, res, next) => {
   // console.log("ram ram");
   
-  const { user_token } = req.cookies;
-    // console.log("token",user_token);
-  if (!user_token) {
+  const { recipe_token } = req.cookies;
+    // console.log("token",recipe_token);
+  if (!recipe_token) {
     return res.json({
       success: 0,
       status: app_constants.UNAUTHORIZED,
@@ -18,7 +18,7 @@ exports.verifyToken = async (req, res, next) => {
     });
   }
 
-  const verify_token = await jwt.verify(user_token, process.env.JST_SECRET_KEY);
+  const verify_token = await jwt.verify(recipe_token, process.env.JST_SECRET_KEY);
   
 
   if (!verify_token) {

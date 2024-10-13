@@ -8,7 +8,7 @@ const cloudinary = require("../helpers/cloudinary");
 
 
 exports.userSignUp = async (data) => {
-  console.log(data);
+  // console.log(data);
   
   const user_data = await User.findOne({ email: data.email });
   if (user_data) {

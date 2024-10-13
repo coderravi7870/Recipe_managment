@@ -13,6 +13,7 @@ const sendToken = async (user_data, res) => {
     expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: process.env.NODE_ENV === "production" ? true : false,
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",  // Set sameSite based on environment
   };
 
   res.setHeader("Cache-Control", "no-store"); // Prevent caching
@@ -20,7 +21,7 @@ const sendToken = async (user_data, res) => {
 
   // console.log("ram ram ");
   
-  res.status(201).cookie("user_token", token, options).json({
+  res.status(201).cookie("recipe_token", token, options).json({
     success: 1,
     status: app_constants.SUCCESS,
     messagemessage: "User Logined successfully!",

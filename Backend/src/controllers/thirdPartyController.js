@@ -10,9 +10,6 @@ exports.getRecipe = async (req, res) => {
         if (Object.keys(validation).length) {
             return res.json({ success: 0, status: app_constants.BAD_REQUEST, message: validation, result: {} })
         }
-
-     
-
         const recipe_list = await thirdPartyService.getRecipe(req.query)
         return res.json(recipe_list)
     }
